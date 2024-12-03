@@ -3,14 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\Status;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class TaskController
+class TaskController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private ValidatorInterface $validator;
@@ -21,7 +23,7 @@ class TaskController
         $this->validator = $validator;
     }
 
-    #[Route("/tasks", methods: ["GET"])]
+    #[Route("", methods: ["GET"], name: "list")]
     public function listTasks(Request $request, TaskRepository $repository): JsonResponse
     {
         $page = (int) $request->query->get("page", 1);
@@ -58,7 +60,8 @@ class TaskController
         $task = new Task();
         $task->setTitle($data['title'] ?? null);
         $task->setDescription($data['description'] ?? null);
-        $task->setStatus($data['status'] ?? 'todo');
+
+        $task->setStatus(Status::from($data['status'] ?? Status::TODO));
         $task->setCreatedAt(new \DateTimeImmutable());
         $task->setUpdatedAt(new \DateTime());
 
@@ -73,7 +76,7 @@ class TaskController
         return new JsonResponse(['message' => 'Task created successfully', 'id' => $task->getId()], 201);
     }
 
-    #[Route("/tasks/{id}", methods: ["POST"])]
+    #[Route("/tasks/{id}", methods: ["PUT"])]
     public function updateTask(int $id, Request $request, TaskRepository $taskRepository): JsonResponse
     {
         $task = $taskRepository->find($id);
@@ -85,7 +88,7 @@ class TaskController
 
         $task->setTitle($data['title'] ?? $task->getTitle());
         $task->setDescription($data['description'] ?? $task->getDescription());
-        $task->setStatus($data['status'] ?? $task->getStatus());
+        $task->setStatus(Status::from($data['status'] ?? Status::TODO));
         $task->setUpdatedAt(new \DateTime());
 
         $errors = $this->validator->validate($task);
@@ -110,6 +113,6 @@ class TaskController
         $this->entityManager->remove($task);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Task deleted successfully']);
+        return new JsonResponse(['message' => 'Task deleted successfully'], 204);
     }
 }
