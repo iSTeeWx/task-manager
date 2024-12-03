@@ -21,7 +21,7 @@ class TaskController
         $this->validator = $validator;
     }
 
-    #@Route("/tasks", method={"GET"})     
+    #[Route("/tasks", methods: ["GET"])]
     public function listTasks(Request $request, TaskRepository $repository): JsonResponse
     {
         $page = (int) $request->query->get("page", 1);
@@ -49,9 +49,8 @@ class TaskController
         ]);
     }
 
-    /**
-     * @Route("/tasks", methods={"POST"})
-     */
+    
+    #[Route("/tasks", methods: ["POST"])] 
     public function createTask(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -74,9 +73,7 @@ class TaskController
         return new JsonResponse(['message' => 'Task created successfully', 'id' => $task->getId()], 201);
     }
 
-    /**
-     * @Route("/tasks/{id}", methods={"PUT"})
-     */
+    #[Route("/tasks/{id}", methods: ["POST"])]
     public function updateTask(int $id, Request $request, TaskRepository $taskRepository): JsonResponse
     {
         $task = $taskRepository->find($id);
@@ -101,9 +98,8 @@ class TaskController
         return new JsonResponse(['message' => 'Task updated successfully']);
     }
 
-    /**
-     * @Route("/tasks/{id}", methods={"DELETE"})
-     */
+    
+    #[Route("/tasks/{id}", methods: ["DELETE"])]
     public function deleteTask(int $id, TaskRepository $taskRepository): JsonResponse
     {
         $task = $taskRepository->find($id);
